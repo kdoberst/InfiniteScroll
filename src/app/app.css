@@ -9,3 +9,40 @@ body,
   --pf-v6-c-content--blockquote--BorderLeftColor: var(--pf-t--global--color--nonstatus--purple--default); /* changes all <blockquote> left border color to the semantic token for non-status (purple) */
   --pf-v6-c-content--hr--BackgroundColor: var(--pf-t--global--color--nonstatus--yellow--default); /* changes a <hr> color to the semantic token for non-status (yellow) */
 }
+
+
+/* Utility classes not working on demo - duplication of existing PF utility classes */
+.pf-v6-u-pt-xl {
+  padding-top: 2rem;
+}
+.pf-v6-u-mb-xl {
+    margin-bottom: 2rem;
+  }
+
+.pf-v6-u-screen-reader {
+    position: fixed;
+    inset-block-start: 0;
+    inset-inline-start: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.pf-v6-u-font-size-md {
+  font-size: 1rem;
+}
+.pf-v6-u-font-size-sm {
+  font-size: 0.875rem;
+}
+
+.pf-v6-u-mt-md{
+  margin-top: 1rem;
+}
+
+.pf-v6-u-mb-md{
+  margin-bottom: 1rem;
+}
+.pf-v6-u-font-weight-bold {
+  font-weight: bold;
+}
