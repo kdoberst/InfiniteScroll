@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Route, Routes } from 'react-router-dom';
 import { Dashboard } from '@app/Dashboard/Dashboard';
-
+import { Drawer } from '@app/Drawer/Drawer';
 import { NotFound } from '@app/NotFound/NotFound';
 
 export interface IAppRoute {
@@ -30,7 +30,13 @@ const routes: AppRouteConfig[] = [
     path: '/',
     title: 'PatternFly Seed | Main Dashboard',
   },
- 
+  {
+    element: <Drawer />,
+    exact: true,
+    label: 'Drawer',
+    path: '/drawer',
+    title: 'PatternFly Seed | Drawer Demo',
+  },
  
 ];
 

@@ -145,9 +145,9 @@ const AppLayout: React.FunctionComponent<IAppLayout> = ({ children }) => {
       >
         {children}
       </Page>
-        <div>
-          FOOTER: <a href="https://www.patternfly.org/v6/">PatternFly</a>
-        </div>
+      <footer>
+        FOOTER: <a href="https://www.patternfly.org/v6/">PatternFly</a>
+      </footer>
     </>
   );
 };
