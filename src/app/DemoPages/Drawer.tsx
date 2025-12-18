@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React from 'react';
 import {
   Button,
   Content,
@@ -15,11 +15,30 @@ import {
   Title,
 } from '@patternfly/react-core';
 
-import PostsList from '../infiniteScrollDemo/PostsLists';
-import PageBodyContent from './PageBodyContent';
+import SampleBodyContent from './SampleBodyContent';
+import { useFetchPosts } from '@app/infiniteScrollDemo/fetchPosts';
+import { Post } from '@app/infiniteScrollDemo/Post';
+import { InfiniteScroll } from '@app/InfiniteScroll/';
+import { useLoadingConfig } from '@app/infiniteScrollDemo/LoadingContext';
 
-const Drawer: React.FunctionComponent = () => {
+export default function Drawer() {
+  const { fetchPosts } = useFetchPosts();
+  const { itemsPerPage } = useLoadingConfig();
   const [isExpanded, setIsExpanded] = React.useState(false);
+  const [posts, setPosts] = React.useState<React.ReactNode[]>([]);
+  const [isLoading, setIsLoading] = React.useState(false);
+  const [endOfData, setEndOfData] = React.useState(false);
+
+  const fetchMoreItems = React.useCallback(
+    async (page: number) => {
+      setIsLoading(true);
+      const newPosts = await fetchPosts(page);
+      setPosts((prevPosts) => [...prevPosts, ...newPosts.map((post) => <Post post={post} key={post.id} />)]);
+      setEndOfData(newPosts.length === 0);
+      setIsLoading(false);
+    },
+    [fetchPosts],
+  );
 
   const onClick = () => {
     setIsExpanded(!isExpanded);
@@ -50,7 +69,16 @@ const Drawer: React.FunctionComponent = () => {
       </DrawerHead>
       <DrawerPanelBody>
         <div style={{ overflowY: 'auto' }}>
-          <PostsList isInDrawer />
+          <InfiniteScroll
+            items={posts}
+            fetchMoreItems={fetchMoreItems}
+            endOfData={endOfData}
+            isLoading={isLoading}
+            itemsPerPage={itemsPerPage}
+            ariaFeedLabel="Sample posts"
+            feedTitle="Posts"
+            isInDrawer={true}
+          />
         </div>
       </DrawerPanelBody>
     </DrawerPanelContent>
@@ -64,17 +92,16 @@ const Drawer: React.FunctionComponent = () => {
             <Title headingLevel="h1" size="lg">
               Drawer Demo Page
             </Title>
+            <p>This example shows the infinite scroll component in a drawer.</p>
             <Content component={ContentVariants.p}>
               <Button aria-expanded={isExpanded} onClick={onClick}>
                 Toggle drawer with focus trap
               </Button>
             </Content>
-            <PageBodyContent />
+            <SampleBodyContent />
           </PageSection>
         </DrawerContentBody>
       </DrawerContent>
     </PFDrawer>
   );
-};
-
-export { Drawer };
+}

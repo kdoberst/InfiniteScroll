@@ -267,9 +267,10 @@ describe('InfiniteScroll', () => {
     }, { timeout: 3000 });
   });
 
-  it('should not render loading indicator when infinite scroll is disabled', () => {
+  it('should render loading indicator when infinite scroll is disabled', () => {
     render(<InfiniteScroll {...defaultProps} turnOffInfiniteScrollByDefault={true} isLoading={true} />);
-    expect(screen.queryByRole('status')).not.toBeInTheDocument();
+    expect(screen.getByRole('status')).toBeInTheDocument();
+   
   });
 
   it('should not render load more button when infinite scroll is enabled', () => {

@@ -1,4 +1,4 @@
-import {  MutableRefObject, RefObject, useEffect } from 'react';
+import { MutableRefObject, RefObject, useEffect } from 'react';
 
 /**
  * Custom hook to manage focus when new items are loaded via the "Load more" button.
@@ -10,7 +10,7 @@ import {  MutableRefObject, RefObject, useEffect } from 'react';
  * - Infinite scroll is disabled
  * - Loading has completed
  * - New items were actually added
- * - The "Load more" button still has focus (user hasn't moved focus elsewhere)
+ * - The button had focus when clicked (tracked before loading started)
  * 
  * @param isInfiniteScrollEnabled - Whether infinite scroll is enabled
  * @param isLoading - Whether items are currently being loaded
@@ -48,8 +48,8 @@ export function useFocusManagement({
       
       // Use setTimeout to ensure DOM is fully updated before attempting to focus
       setTimeout(() => {
-        // Only move focus if the button still has focus (user hasn't moved elsewhere)
-        if (document.activeElement === loadMoreButtonRef.current && feedRef.current) {
+        // Focus the first new article (button is hidden during loading, so we always move focus)
+        if (feedRef.current) {
           const articleElements = Array.from(
             feedRef.current.querySelectorAll<HTMLElement>('article[tabindex="0"]')
           ) as HTMLElement[];
@@ -65,6 +65,6 @@ export function useFocusManagement({
         loadMoreButtonHadFocusRef.current = false;
       }, 100);
     }
-  }, [isLoading, isInfiniteScrollEnabled, itemsLength, feedRef, loadMoreButtonRef, previousPostCountRef, loadMoreButtonHadFocusRef]);
+  }, [isLoading, isInfiniteScrollEnabled, itemsLength, feedRef, previousPostCountRef, loadMoreButtonHadFocusRef]);
 }
 

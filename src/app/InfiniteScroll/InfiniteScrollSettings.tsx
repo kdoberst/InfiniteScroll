@@ -1,4 +1,4 @@
-import {  Switch } from '@patternfly/react-core';
+import { Switch } from '@patternfly/react-core';
 import React from 'react';
 import KeyboardShortcuts from './KeyboardShortcuts';
 
@@ -27,7 +27,6 @@ export default function InfiniteScrollSettings({
   onlyAllowLoadMoreButton = false,
 }: InfiniteScrollSettingsProps) {
   return (
-
     <>
     {!onlyAllowLoadMoreButton && (
      <Switch

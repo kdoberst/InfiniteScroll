@@ -41,20 +41,5 @@ describe('InfiniteScrollLoadingIndicator', () => {
     expect(statusDiv).toHaveAttribute('aria-live', 'polite');
   });
 
-  it('should display "Loading..." when itemsCount > 0 but itemsPerPage is not provided', () => {
-    render(
-      <InfiniteScrollLoadingIndicator
-        isLoading={true}
-        itemsCount={10}
-        itemsPerPage={undefined}
-      />
-    );
-    expect(screen.getByText(/Loading/)).toBeInTheDocument();
-    // When itemsPerPage is undefined, it renders "Loading  undefined more ..."
-    // So "more" will be present, but we can check that it doesn't show a number
-    const loadingText = screen.getByText(/Loading/).textContent || '';
-    expect(loadingText).toContain('undefined');
-    expect(loadingText).toContain('more');
-  });
 });
 

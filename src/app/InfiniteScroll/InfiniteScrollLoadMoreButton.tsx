@@ -1,15 +1,18 @@
-import { Button, Spinner } from '@patternfly/react-core';
-import React, { MutableRefObject, RefObject } from 'react';
+import { Button } from '@patternfly/react-core';
+import React, { MutableRefObject, RefObject, useEffect } from 'react';
+import InfiniteScrollLoadingIndicator from './InfiniteScrollLoadingIndicator';
+import { RedoIcon } from '@patternfly/react-icons';
 
 export type InfiniteScrollLoadMoreButtonProps = {
   /** Whether items are currently being loaded */
   isLoading: boolean;
-  /** Title/label for the items */
-  itemsTitle: string;
+
   /** Number of items per page */
   itemsPerPage?: number;
   /** Ref to the button element */
   loadMoreButtonRef: RefObject<HTMLButtonElement>;
+  /** Ref to the loading indicator container */
+  loadingIndicatorContainerRef: RefObject<HTMLParagraphElement>;
   /** Current number of items (for tracking before load) */
   itemsCount: number;
   /** Ref tracking the item count before loading */
@@ -26,9 +29,9 @@ export type InfiniteScrollLoadMoreButtonProps = {
  */
 export default function InfiniteScrollLoadMoreButton({
   isLoading,
-  itemsTitle,
   itemsPerPage,
   loadMoreButtonRef,
+  loadingIndicatorContainerRef,
   itemsCount,
   previousPostCountRef,
   loadMoreButtonHadFocusRef,
@@ -43,26 +46,35 @@ export default function InfiniteScrollLoadMoreButton({
     onLoadMore();
   };
 
+  // Focus the loading indicator container when loading starts (only if button had focus when clicked)
+  useEffect(() => {
+    if (isLoading && loadingIndicatorContainerRef.current && loadMoreButtonHadFocusRef.current) {
+      // Make the container focusable if it isn't already
+      if (!loadingIndicatorContainerRef.current.hasAttribute('tabindex')) {
+        loadingIndicatorContainerRef.current.setAttribute('tabindex', '-1');
+      }
+      // Focus the container to maintain accessibility when button is hidden
+      loadingIndicatorContainerRef.current.focus();
+    }
+  }, [isLoading, loadingIndicatorContainerRef, loadMoreButtonHadFocusRef]);
+
   return (
-    <p>
-      <Button
-        ref={loadMoreButtonRef}
-        onClick={handleClick}
-        isAriaDisabled={isLoading}
-        icon={isLoading && <Spinner size="md" aria-hidden="true" />}
-      >
-        {isLoading ? (
-          <>
-            Loading more {itemsTitle}{' '}
-            <span className="pf-v6-u-screen-reader">
-              new content will receive focus once loaded
-            </span>
-          </>
-        ) : (
-          <>Load {itemsPerPage} more</>
-        )}
-      </Button>
-    </p>
+    <div ref={loadingIndicatorContainerRef}>
+      {isLoading ? (
+        <>
+          <span className="pf-v6-u-screen-reader">New content will receive focus once loaded</span>
+          <InfiniteScrollLoadingIndicator isLoading={isLoading} itemsCount={itemsCount} itemsPerPage={itemsPerPage} />
+        </>
+      ) : (
+        <Button
+          ref={loadMoreButtonRef}
+          onClick={handleClick}
+          isAriaDisabled={isLoading}
+          icon={<RedoIcon aria-hidden="true" />}
+        >
+          Load {itemsPerPage} more
+        </Button>
+      )}
+    </div>
   );
 }
-

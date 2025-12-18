@@ -1,8 +1,15 @@
 import * as React from 'react';
 import { Route, Routes } from 'react-router-dom';
-import { Dashboard } from '@app/Dashboard/Dashboard';
-import { Drawer } from '@app/Drawer/Drawer';
+
 import { NotFound } from '@app/NotFound/NotFound';
+import DefaultList from './DemoPages/DefautList';
+import DetachedConfig from './DemoPages/DetachedConfig';
+import Multiple from './DemoPages/Multiple';
+import Errors from './DemoPages/Errors';
+import OnlyLoadMore from './DemoPages/OnlyLoadMore';
+import Drawer from './DemoPages/Drawer';
+import ChangeUrl from './DemoPages/ChangeURL';
+import About from './About';
 
 export interface IAppRoute {
   label?: string; // Excluding the label will exclude the route from the nav sidebar in AppLayout
@@ -24,20 +31,58 @@ export type AppRouteConfig = IAppRoute | IAppRouteGroup;
 
 const routes: AppRouteConfig[] = [
   {
-    element: <Dashboard />,
+    element: <DefaultList />,
     exact: true,
-    label: 'Dashboard',
+    label: 'Default List',
     path: '/',
-    title: 'PatternFly Seed | Main Dashboard',
+    title: 'Infinite Scroll | Default List',
+  },
+  { element:<OnlyLoadMore />,
+    exact: true,
+    label: 'Only Load More',
+    path: '/only-load-more',
+    title: 'Infinite Scroll | Only Load More',
   },
   {
     element: <Drawer />,
     exact: true,
     label: 'Drawer',
     path: '/drawer',
-    title: 'PatternFly Seed | Drawer Demo',
+    title: 'Infinite Scroll | Drawer Demo',
   },
- 
+  {
+    element: <DetachedConfig />,
+    exact: true,
+    label: 'Detached Config',
+    path: '/detached-config',
+    title: 'Infinite Scroll | Detached Config',
+  },
+  {
+    element: <Multiple />,
+    exact: true,
+    label: 'Multiple feeds',
+    path: '/multiple',
+    title: 'Infinite Scroll | Multiple feeds on a page',
+  },
+  {
+    element: <Errors />,
+    exact: true,
+    label: 'Errors',
+    path: '/errors',
+    title: 'Infinite Scroll | Errors',
+  },
+  { element: <ChangeUrl />,
+    exact: true,
+    label: 'Change URL',
+    path: '/change-url',
+    title: 'Infinite Scroll | Change URL',
+  },
+  {element: <About />,
+    exact: true,
+    label: 'About',
+    path: '/about',
+    title: 'Infinite Scroll | About',
+  },
 ];
 
 const flattenedRoutes: IAppRoute[] = routes.reduce(

@@ -288,46 +288,6 @@ describe('useFocusManagement', () => {
     expect(focusSpy).not.toHaveBeenCalled();
   });
 
-  it('should not move focus if button loses focus before setTimeout executes', () => {
-    // Create 5 articles first (previousPostCountRef is 5)
-    for (let i = 0; i < 5; i++) {
-      const article = document.createElement('article');
-      article.setAttribute('tabindex', '0');
-      feedRef.current!.appendChild(article);
-    }
-
-    // Create the first new article (index 5)
-    const article = document.createElement('article');
-    article.setAttribute('tabindex', '0');
-    feedRef.current!.appendChild(article);
-
-    loadMoreButtonRef.current!.focus();
-
-    const articleFocusSpy = jest.spyOn(article, 'focus');
-
-    renderHook(() =>
-      useFocusManagement({
-        isInfiniteScrollEnabled: false,
-        isLoading: false,
-        itemsLength: 10,
-        feedRef,
-        loadMoreButtonRef,
-        previousPostCountRef,
-        loadMoreButtonHadFocusRef,
-      }),
-    );
-
-    // Move focus away before timeout executes
-    const otherButton = document.createElement('button');
-    document.body.appendChild(otherButton);
-    otherButton.focus();
-
-    jest.advanceTimersByTime(100);
-    // Should not focus because button no longer has focus
-    expect(articleFocusSpy).not.toHaveBeenCalled();
-    document.body.removeChild(otherButton);
-  });
-
   it('should not move focus if feedRef.current is null', () => {
     const nullFeedRef: React.RefObject<HTMLDivElement> = { current: null };
 

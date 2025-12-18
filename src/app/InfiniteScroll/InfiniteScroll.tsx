@@ -9,8 +9,8 @@ import { useKeyboardNavigation } from './hooks/useKeyboardNavigation';
 import { useFocusManagement } from './hooks/useFocusManagement';
 
 import './infiniteScroll.css';
-  import { Button, Flex, FlexItem, Popover, Title } from '@patternfly/react-core';
-import { CogIcon } from '@patternfly/react-icons';
+import { Alert, AlertVariant, Button, Flex, FlexItem, Popover, Title } from '@patternfly/react-core';
+import { CogIcon, RedoIcon } from '@patternfly/react-icons';
 
 /**
  * Props for the InfiniteScroll component
@@ -39,8 +39,9 @@ export type InfiniteScrollProps = {
   /** If true, indicates that the infinite scroll is in a drawer. */
   isInDrawer?: boolean;
   feedTitle?: string;
-
+  loadingDataErrorMessage?: string;
   feedTitleHeadingLevel?: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
+  isInfiniteScrollEnabled?: boolean;
 };
 
 /**
@@ -69,15 +70,31 @@ export default function InfiniteScroll({
   feedTitle,
   turnOffInfiniteScrollByDefault = false,
   onlyAllowLoadMoreButton = false,
-  feedTitleHeadingLevel = "h2",
+  feedTitleHeadingLevel = 'h2',
+  loadingDataErrorMessage,
+  isInfiniteScrollEnabled:externalControlledInfiniteScrollEnabled,
 }: InfiniteScrollProps) {
+  // Determine if infinite scroll is externally controlled
+  const isExternallyControlled = 
+    externalControlledInfiniteScrollEnabled !== undefined;
+
   // State management
   /** Current page number being displayed/loaded */
   const [page, setPage] = useState(initialPage);
-  /** Whether automatic infinite scroll is enabled */
-  const [isInfiniteScrollEnabled, setIsInfiniteScrollEnabled] = useState(!turnOffInfiniteScrollByDefault && !onlyAllowLoadMoreButton);
+  /** Whether automatic infinite scroll is enabled (internal state, only used when not externally controlled) */
+  const [internalInfiniteScrollEnabled, setInternalInfiniteScrollEnabled] = useState(
+    !turnOffInfiniteScrollByDefault && !onlyAllowLoadMoreButton,
+  );
   /** Whether the settings popover is open */
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+
+  // Use external value if provided, otherwise use internal state
+  const isInfiniteScrollEnabled = isExternallyControlled 
+    ? externalControlledInfiniteScrollEnabled 
+    : internalInfiniteScrollEnabled;
+
+  // Use internal setter (only used when not externally controlled, since settings are hidden when externally controlled)
+  const setIsInfiniteScrollEnabled = setInternalInfiniteScrollEnabled;
 
   // Refs for DOM elements
   /** Reference to the main container div */
@@ -86,6 +103,8 @@ export default function InfiniteScroll({
   const feedRef = useRef<HTMLDivElement>(null);
   /** Reference to the "Load more" button */
   const loadMoreButtonRef = useRef<HTMLButtonElement>(null);
+  /** Reference to the loading indicator container (when button is hidden) */
+  const loadingIndicatorContainerRef = useRef<HTMLParagraphElement>(null);
 
   // Refs for tracking focus management
   /** Number of items before the last "Load more" click (for focus management) */
@@ -95,17 +114,26 @@ export default function InfiniteScroll({
 
   /**
    * Increments the page number, which triggers loading the next page.
+   * Does not increment if there is an error.
    */
   const increasePage = useCallback(() => {
+    // Don't increase page if there is an error
+    if (loadingDataErrorMessage) return;
     setPage((prevPage) => prevPage + 1);
-  }, []);
+  }, [loadingDataErrorMessage]);
 
   // Custom hooks
   /** Handles page loading logic (initial load and subsequent pages) */
   usePageLoader(initialPage, page, endOfData, fetchMoreItems);
 
   /** Handles intersection observer for infinite scroll detection */
-  const lastPostElementRef = useInfiniteScrollObserver(isLoading, endOfData, isInfiniteScrollEnabled, increasePage);
+  const lastPostElementRef = useInfiniteScrollObserver(
+    isLoading,
+    endOfData,
+    isInfiniteScrollEnabled,
+    increasePage,
+    loadingDataErrorMessage,
+  );
 
   /** Handles keyboard navigation within the feed */
   useKeyboardNavigation(postsContainerRef, feedRef, isInDrawer);
@@ -123,9 +151,9 @@ export default function InfiniteScroll({
 
   // Handle Escape key when in drawer: close popover first, then let drawer handle it
   const popoverButtonRef = useRef<HTMLButtonElement>(null);
-  
+
   useEffect(() => {
-    if (!isInDrawer) return;
+    if (!isInDrawer || isExternallyControlled) return;
 
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && isPopoverOpen) {
@@ -145,48 +173,50 @@ export default function InfiniteScroll({
     return () => {
       document.removeEventListener('keydown', handleEscape, true);
     };
-  }, [isInDrawer, isPopoverOpen]);
+  }, [isInDrawer, isPopoverOpen, isExternallyControlled]);
 
   return (
     <div ref={postsContainerRef}>
-    
-     <Flex><FlexItem><Title headingLevel={feedTitleHeadingLevel}>{feedTitle}</Title></FlexItem>
-      
-<FlexItem>
+      <Flex>
+        <FlexItem>
+          <Title headingLevel={feedTitleHeadingLevel}>{feedTitle}</Title>
+        </FlexItem>
 
-     
-      <Popover
-        headerContent="Feed settings"
-        headerIcon={<CogIcon />}
-        hasAutoWidth
-        isVisible={isPopoverOpen}
-        shouldClose={() => {
-          setIsPopoverOpen(false);
-          return true;
-        }}
-        bodyContent={
-          <InfiniteScrollSettings
-            itemsTitle={itemsTitle}
-            isInfiniteScrollEnabled={isInfiniteScrollEnabled}
-            onToggleInfiniteScroll={setIsInfiniteScrollEnabled}
-            isInDrawer={isInDrawer}
-            onlyAllowLoadMoreButton={onlyAllowLoadMoreButton}
-          />
-        }
-        appendTo={() => document.body}
-      >
-        <Button
-          ref={popoverButtonRef}
-          isSettings
-          variant="plain"
-          aria-label="Feed settings"
-          onClick={() => setIsPopoverOpen(!isPopoverOpen)}
-        />
-      </Popover>
-</FlexItem>
-</Flex>
-     
-    {/* Feed container: Displays all items in a feed structure for accessibility */}
+        {!isExternallyControlled && (
+          <FlexItem>
+            <Popover
+              headerContent="Feed settings"
+              headerIcon={<CogIcon />}
+              hasAutoWidth
+              isVisible={isPopoverOpen}
+              shouldClose={() => {
+                setIsPopoverOpen(false);
+                return true;
+              }}
+              bodyContent={
+                <InfiniteScrollSettings
+                  itemsTitle={itemsTitle}
+                  isInfiniteScrollEnabled={isInfiniteScrollEnabled}
+                  onToggleInfiniteScroll={setIsInfiniteScrollEnabled}
+                  isInDrawer={isInDrawer}
+                  onlyAllowLoadMoreButton={onlyAllowLoadMoreButton}
+                />
+              }
+              appendTo={() => document.body}
+            >
+              <Button
+                ref={popoverButtonRef}
+                isSettings
+                variant="plain"
+                aria-label="Feed settings"
+                onClick={() => setIsPopoverOpen(!isPopoverOpen)}
+              />
+            </Popover>
+          </FlexItem>
+        )}
+      </Flex>
+
+      {/* Feed container: Displays all items in a feed structure for accessibility */}
       <InfiniteScrollFeed
         items={items}
         endOfData={endOfData}
@@ -201,17 +231,29 @@ export default function InfiniteScroll({
       {endOfData && <p>{`All ${itemsTitle} loaded.`}</p>}
 
       {/* Loading indicator: Shown when loading and infinite scroll is enabled */}
+      {/* The loading indicator when infinite scroll is disabled is shown in the Load more button */}
       {isInfiniteScrollEnabled && (
         <InfiniteScrollLoadingIndicator isLoading={isLoading} itemsCount={items.length} itemsPerPage={itemsPerPage} />
       )}
 
-      {/* Load more button: Shown when infinite scroll is disabled and more data is available */}
-      {!isInfiniteScrollEnabled && !endOfData && (
+      {/* Error message: Shown when there is an error loading data */}
+      {loadingDataErrorMessage && (
+        <Alert variant={AlertVariant.warning} title={`Could not load more ${itemsTitle}`} actionLinks={
+          <Button icon={<RedoIcon />} onClick={() => fetchMoreItems(page)}>
+            Retry
+          </Button>
+        }>
+          {loadingDataErrorMessage}
+        </Alert>
+      )}
+
+      {/* Load more button: Shown when infinite scroll is disabled and more data is available and there is no error */}
+      {!isInfiniteScrollEnabled && !endOfData && !loadingDataErrorMessage && (
         <InfiniteScrollLoadMoreButton
           isLoading={isLoading}
-          itemsTitle={itemsTitle}
           itemsPerPage={itemsPerPage}
           loadMoreButtonRef={loadMoreButtonRef}
+          loadingIndicatorContainerRef={loadingIndicatorContainerRef}
           itemsCount={items.length}
           previousPostCountRef={previousPostCountRef}
           loadMoreButtonHadFocusRef={loadMoreButtonHadFocusRef}

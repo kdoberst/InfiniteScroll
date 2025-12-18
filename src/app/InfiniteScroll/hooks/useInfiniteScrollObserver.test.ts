@@ -169,5 +169,28 @@ describe('useInfiniteScrollObserver', () => {
 
     expect(mockObserve).not.toHaveBeenCalled();
   });
+
+  it('should not observe if loadingDataErrorMessage is provided', () => {
+    jest.clearAllMocks();
+    mockObserve = jest.fn();
+    mockDisconnect = jest.fn();
+    global.IntersectionObserver = class IntersectionObserver {
+      observe = mockObserve;
+      disconnect = mockDisconnect;
+      constructor(callback: IntersectionObserverCallback) {
+        storedCallback = callback as (entries: IntersectionObserverEntry[]) => void;
+      }
+    } as never;
+
+    const { result } = renderHook(() =>
+      useInfiniteScrollObserver(false, false, true, mockIncreasePage, 'Error loading data')
+    );
+
+    const node = document.createElement('div');
+    result.current(node);
+
+    // Should not create observer when there is an error
+    expect(mockObserve).not.toHaveBeenCalled();
+  });
 });
 

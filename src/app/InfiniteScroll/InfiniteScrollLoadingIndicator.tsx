@@ -1,4 +1,4 @@
-import { Spinner } from '@patternfly/react-core';
+import { Skeleton } from '@patternfly/react-core';
 import React from 'react';
 
 export type InfiniteScrollLoadingIndicatorProps = {
@@ -22,9 +22,9 @@ export default function InfiniteScrollLoadingIndicator({
 
   return (
     <div role="status" aria-live="polite">
-      <p>
-        <Spinner size="md" aria-hidden="true" /> Loading {itemsCount !== 0 && ` ${itemsPerPage} more `}...
-      </p>
+      <Skeleton screenreaderText={`Loading ${itemsCount !== 0 && itemsPerPage ? `${itemsPerPage} more ` : ''}...`} />
+      <Skeleton className="pf-v6-u-mt-md" width="50%" />
+      <Skeleton className="pf-v6-u-mt-md" width="75%" />
     </div>
   );
 }

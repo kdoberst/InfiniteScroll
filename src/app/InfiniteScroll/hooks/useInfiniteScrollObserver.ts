@@ -8,13 +8,15 @@ import { useCallback, useRef } from 'react';
  * @param endOfData - Whether all data has been loaded
  * @param isInfiniteScrollEnabled - Whether infinite scroll is enabled
  * @param increasePage - Callback to increment the page number
+ * @param loadingDataErrorMessage - Error message if there is an error loading data
  * @returns Ref callback to attach to the last item in the list
  */
 export function useInfiniteScrollObserver(
   isLoading: boolean,
   endOfData: boolean,
   isInfiniteScrollEnabled: boolean,
-  increasePage: () => void
+  increasePage: () => void,
+  loadingDataErrorMessage?: string
 ) {
   /** IntersectionObserver instance for detecting when user scrolls to the last item */
   const observer = useRef<IntersectionObserver>();
@@ -26,17 +28,14 @@ export function useInfiniteScrollObserver(
    */
   const lastPostElementRef = useCallback(
     (node: HTMLElement | null) => {
-      // Don't observe if loading, no more data, or infinite scroll is disabled
-      if (isLoading || endOfData || !isInfiniteScrollEnabled) {
-        if (observer.current) {
-          observer.current.disconnect();
-        }
-        return;
-      }
-
-      // Disconnect any existing observer
+      // Disconnect any existing observer first
       if (observer.current) {
         observer.current.disconnect();
+      }
+
+      // Don't observe if loading, no more data, infinite scroll is disabled, or there is an error
+      if (isLoading || endOfData || !isInfiniteScrollEnabled || loadingDataErrorMessage || !node) {
+        return;
       }
 
       // Create new observer to watch when the last item comes into view
@@ -47,11 +46,9 @@ export function useInfiniteScrollObserver(
       });
 
       // Start observing the last item
-      if (node) {
-        observer.current.observe(node);
-      }
+      observer.current.observe(node);
     },
-    [isLoading, endOfData, isInfiniteScrollEnabled, increasePage],
+    [isLoading, endOfData, isInfiniteScrollEnabled, increasePage, loadingDataErrorMessage],
   );
 
   return lastPostElementRef;

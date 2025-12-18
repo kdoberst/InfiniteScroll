@@ -24,7 +24,6 @@ export default function InfiniteScrollFeed({
   items,
   endOfData,
   isLoading,
-  // itemsTitle,
   feedRef,
   lastPostElementRef,
   ariaFeedLabel,
@@ -34,7 +33,6 @@ export default function InfiniteScrollFeed({
       ref={feedRef}
       role="feed"
       aria-busy={isLoading}
-      // aria-label={`${itemsTitle} feed${items.length > 0 ? `, ${items.length} ${items.length === 1 ? itemsTitle.replace(/s$/, '') : itemsTitle} loaded` : ''}${endOfData ? `, all ${itemsTitle} loaded` : ''}`}
       aria-label={ariaFeedLabel}
     >
       {items.map((item, index) => (

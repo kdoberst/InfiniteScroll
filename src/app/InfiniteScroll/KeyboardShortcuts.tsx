@@ -6,7 +6,15 @@ import {
   DescriptionListTerm,
 } from '@patternfly/react-core';
 
-export default function KeyboardShortcuts({ isInDrawer = false }: { isInDrawer?: boolean }) {
+export type KeyboardShortcutsProps = {
+  /** If true, indicates that the infinite scroll is in a drawer. */
+  isInDrawer?: boolean;
+};
+
+/**
+ * Component that displays keyboard shortcuts for the infinite scroll feed.
+ */
+export default function KeyboardShortcuts({ isInDrawer = false }: KeyboardShortcutsProps) {
   return (
     <>
       <div className="pf-v6-u-font-size-sm pf-v6-u-font-weight-bold pf-v6-u-mt-md pf-v6-u-mb-md">Keyboard shortcuts:</div>
